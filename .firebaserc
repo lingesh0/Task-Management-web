@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "taskmanaging-145ab"
+  },
+  "targets": {
+    "your-project-id": {
+      "hosting": {
+        "site": "your-site-name",
+        "target": "your-target-name"
+      }
+    }
+  }
+}
