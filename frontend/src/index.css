@@ -1,0 +1,132 @@
+/* General Styles */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  color: #22223b;
+}
+
+/* Home Page */
+.home {
+  max-width: 600px;
+  margin: 80px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 48px 32px;
+  text-align: center;
+}
+
+/* Auth Forms (Login/Register) */
+.login-container, .register-container {
+  max-width: 400px;
+  margin: 80px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 40px 32px;
+}
+.login-container h2, .register-container h2 {
+  margin-bottom: 24px;
+}
+.login-container form div, .register-container form div {
+  margin-bottom: 18px;
+}
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+input[type="email"], input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #c9c9c9;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #f9f9f9;
+  transition: border 0.2s;
+}
+input:focus {
+  border: 1.5px solid #4f8cff;
+  outline: none;
+}
+button {
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover {
+  background: #2563eb;
+}
+.error {
+  color: #e63946;
+  margin-top: 8px;
+  font-size: 0.97rem;
+}
+
+/* Dashboard */
+.dashboard-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 32px 24px;
+}
+.dashboard-container h1 {
+  margin-bottom: 24px;
+}
+.dashboard-container input[type="text"] {
+  width: 70%;
+  margin-right: 12px;
+}
+.dashboard-container button {
+  margin-top: 0;
+}
+.task-list {
+  margin-top: 32px;
+}
+
+/* Task Detail */
+.task-detail-container {
+  max-width: 600px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 36px 28px;
+}
+
+/* Profile */
+.profile-container {
+  max-width: 500px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 36px 28px;
+}
+
+/* Not Found */
+.notfound-container {
+  text-align: center;
+  margin-top: 100px;
+}
+
+@media (max-width: 600px) {
+  .home, .login-container, .register-container, .dashboard-container, .task-detail-container, .profile-container {
+    padding: 18px 6px;
+    margin: 24px 4px;
+  }
+} 

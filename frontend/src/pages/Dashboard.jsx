@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import TaskCard from '../components/TaskCard';
+import '../css/Dashboard.css';
 
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);
@@ -35,7 +36,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div>
+        <div className="dashboard-container">
             <h1>Task Dashboard</h1>
             <input 
                 type="text" 
@@ -44,7 +45,7 @@ const Dashboard = () => {
                 placeholder="Add a new task" 
             />
             <button onClick={handleAddTask}>Add Task</button>
-            <div>
+            <div className="task-list">
                 {tasks.map(task => (
                     <TaskCard 
                         key={task.id} 

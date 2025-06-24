@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import '../css/TaskDetail.css';
 
 const TaskDetail = () => {
     const { id } = useParams();
@@ -38,7 +39,7 @@ const TaskDetail = () => {
     }
 
     return (
-        <div>
+        <div className="task-detail-container">
             <h1>Task Detail</h1>
             {task ? (
                 <div>

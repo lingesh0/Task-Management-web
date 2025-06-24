@@ -1,11 +1,12 @@
 import React from 'react';
-import { useAuth } from '../firebase'; // Assuming you have a custom hook for authentication
 import { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import '../css/Profile.css';
 
 const Profile = () => {
-    const { user } = useAuth();
+    // const { user } = useAuth();
+    const user = null; // Placeholder: implement real auth later
     const [taskStats, setTaskStats] = useState(null);
 
     useEffect(() => {
@@ -25,11 +26,11 @@ const Profile = () => {
     }, [user]);
 
     if (!user) {
-        return <div>Please log in to view your profile.</div>;
+        return <div className="profile-container">Please log in to view your profile.</div>;
     }
 
     return (
-        <div>
+        <div className="profile-container">
             <h1>User Profile</h1>
             <p>Email: {user.email}</p>
             {taskStats && (

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import '../css/Register.css';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ const Register = () => {
     };
 
     return (
-        <div>
+        <div className="register-container">
             <h2>Register</h2>
             <form onSubmit={handleRegister}>
                 <div>
@@ -44,7 +45,7 @@ const Register = () => {
                     />
                 </div>
                 <button type="submit">Register</button>
-                {error && <p>{error}</p>}
+                {error && <p className="error">{error}</p>}
             </form>
         </div>
     );

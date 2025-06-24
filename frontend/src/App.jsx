@@ -8,6 +8,7 @@ import TaskDetail from './pages/TaskDetail';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import Navbar from './components/Navbar';
+import TaskTracking from './pages/TaskTracking';
 
 const App = () => {
     return (
@@ -20,6 +21,7 @@ const App = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/task/:id" element={<TaskDetail />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/task-tracking" element={<TaskTracking />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </Router>

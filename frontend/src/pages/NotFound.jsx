@@ -1,8 +1,9 @@
 import React from 'react';
+import '../css/NotFound.css';
 
 const NotFound = () => {
     return (
-        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <div className="notfound-container">
             <h1>404 - Not Found</h1>
             <p>The page you are looking for does not exist.</p>
         </div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import '../css/Navbar.css';
 
 const Navbar = () => {
     const [user, setUser] = useState(null);
@@ -19,35 +20,25 @@ const Navbar = () => {
     };
 
     return (
-        <nav>
-            <h1>Task Management</h1>
-            <ul>
-                <li>
-                    <Link to="/">Home</Link>
-                </li>
+        <nav className="navbar">
+            <Link to="/" className="navbar-logo">Task Management</Link>
+            <div className="navbar-links">
+                <Link to="/">Home</Link>
+                <Link to="/task-tracking">Task Tracking</Link>
                 {user ? (
                     <>
-                        <li>
-                            <Link to="/dashboard">Dashboard</Link>
-                        </li>
-                        <li>
-                            <Link to="/profile">Profile</Link>
-                        </li>
-                        <li>
-                            <button onClick={handleLogout}>Logout</button>
-                        </li>
+                        <Link to="/dashboard">Dashboard</Link>
+                        <Link to="/profile">Profile</Link>
+                        <button onClick={handleLogout}>Logout</button>
+                        <span className="navbar-user">{user.email}</span>
                     </>
                 ) : (
                     <>
-                        <li>
-                            <Link to="/login">Login</Link>
-                        </li>
-                        <li>
-                            <Link to="/register">Register</Link>
-                        </li>
+                        <Link to="/login">Login</Link>
+                        <Link to="/register">Register</Link>
                     </>
                 )}
-            </ul>
+            </div>
         </nav>
     );
 };
