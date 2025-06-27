@@ -5,4 +5,169 @@
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
   padding: 36px 28px;
+}
+.task-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.task-title-input {
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border: 1.5px solid #c9c9c9;
+  border-radius: 6px;
+  width: 70%;
+}
+.priority-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: #222;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-right: 8px;
+  background: #e0e7ff;
+  color: #222;
+}
+.status-pending { background: #facc15; color: #fff; }
+.status-in\ progress { background: #38bdf8; color: #fff; }
+.status-completed { background: #4ade80; color: #fff; }
+.status-archived { background: #a3a3a3; color: #fff; }
+.overdue-badge {
+  color: #fff;
+  background: #ef4444;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.due-today-badge {
+  color: #fff;
+  background: #f59e42;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.task-detail-meta {
+  margin-bottom: 18px;
+}
+.task-detail-section {
+  margin-bottom: 18px;
+}
+.task-desc-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  resize: vertical;
+}
+.subtask-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px 0;
+}
+.subtask-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.subtask-done span {
+  text-decoration: line-through;
+  color: #888;
+}
+.subtask-delete-btn {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-left: 8px;
+}
+.add-subtask-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.add-subtask-form input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.add-subtask-form button {
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.task-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+.edit-btn, .save-btn {
+  background: #4f8cff;
+  color: #fff;
+}
+.delete-btn {
+  background: #f87171;
+  color: #fff;
+}
+.cancel-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+.delete-confirm-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.delete-confirm-content {
+  background: #fff;
+  padding: 32px 28px;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  text-align: center;
+}
+.activity-log-section {
+  margin-top: 32px;
+}
+.activity-log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.98rem;
+}
+.activity-type {
+  color: #2563eb;
+  font-weight: 600;
+}
+.activity-meta {
+  color: #888;
+  font-size: 0.93rem;
+  margin-left: 8px;
 } 

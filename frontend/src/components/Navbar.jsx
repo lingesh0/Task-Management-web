@@ -1,46 +1,48 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
-import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import '../css/Navbar.css';
+import '../css/index.css';
 
-const Navbar = () => {
-    const [user, setUser] = useState(null);
+const navItems = [
+  { to: '/dashboard', icon: '🏠', label: 'Dashboard' },
+  { to: '/task-tracking', icon: '📝', label: 'Tasks' },
+  { to: '/profile', icon: '👤', label: 'Profile' },
+  { to: '/settings', icon: '⚙️', label: 'Settings' },
+  { to: '/task-history', icon: '🧾', label: 'Task History' },
+];
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-        });
-        return () => unsubscribe();
-    }, []);
+const Sidebar = () => {
+  const [user, setUser] = useState(null);
+  const location = useLocation();
 
-    const handleLogout = async () => {
-        await signOut(auth);
-    };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    return (
-        <nav className="navbar">
-            <Link to="/" className="navbar-logo">Task Management</Link>
-            <div className="navbar-links">
-                <Link to="/">Home</Link>
-                <Link to="/task-tracking">Task Tracking</Link>
-                {user ? (
-                    <>
-                        <Link to="/dashboard">Dashboard</Link>
-                        <Link to="/profile">Profile</Link>
-                        <button onClick={handleLogout}>Logout</button>
-                        <span className="navbar-user">{user.email}</span>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login">Login</Link>
-                        <Link to="/register">Register</Link>
-                    </>
-                )}
-            </div>
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-content">
+        
+        <nav className="sidebar-nav">
+          {navItems.map(item => (
+            <Link key={item.to} to={item.to} className={location.pathname === item.to ? 'active' : ''}>
+              <span className="sidebar-icon">{item.icon}</span>
+              <span className="sidebar-label">{item.label}</span>
+            </Link>
+          ))}
         </nav>
-    );
+      </div>
+      
+    </aside>
+  );
 };
 
-export default Navbar;
+export default Sidebar;

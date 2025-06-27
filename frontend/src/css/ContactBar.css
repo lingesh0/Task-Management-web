@@ -1,0 +1,37 @@
+.contact-bar {
+  width: 100vw;
+  min-width: 0;
+  background: #f4f6f8;
+  border-top: 1.5px solid #e5e7eb;
+  text-align: center;
+  font-size: 0.97rem;
+  color: #7c3aed;
+  padding: 12px 0 8px 0;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 99;
+}
+
+.contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+}
+
+.contact-info a {
+  color: #7c3aed;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-info a:hover {
+  text-decoration: underline;
+}
+
+.contact-copyright {
+  font-size: 0.93rem;
+  color: #bdbdbd;
+} 

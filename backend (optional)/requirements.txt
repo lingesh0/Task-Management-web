@@ -1,4 +1,0 @@
-FastAPI
-uvicorn
-python-dotenv
-firebase-admin
