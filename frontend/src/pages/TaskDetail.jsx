@@ -184,7 +184,9 @@ const TaskDetail = () => {
 
   return (
     <div className="task-detail-container">
-      <h1>Task Detail</h1>
+      <div className="dashboard-header">
+        <h1>Task Detail</h1>
+      </div>
       <div className="task-detail-header">
         {editMode ? (
           <input

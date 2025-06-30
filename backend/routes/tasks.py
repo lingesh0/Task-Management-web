@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from auth import get_current_user
@@ -6,6 +6,8 @@ import crud, schemas
 import json
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
+from datetime import datetime, date, timedelta
+from typing import Optional
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -28,11 +30,137 @@ def serialize_task(task):
         'updated_at': task.updated_at.isoformat() if task.updated_at else None,
     }
 
+def serialize_calendar_task(task):
+    """Enhanced serialization for calendar view with overdue and days until due info"""
+    base_data = serialize_task(task)
+    
+    # Calculate overdue status and days until due
+    is_overdue = False
+    days_until_due = None
+    
+    if task.due_date and task.status != 'Completed':
+        try:
+            due_date = datetime.strptime(task.due_date, '%Y-%m-%d').date()
+            today = datetime.now().date()
+            days_until_due = (due_date - today).days
+            is_overdue = days_until_due < 0
+        except ValueError:
+            pass
+    
+    base_data.update({
+        'is_overdue': is_overdue,
+        'days_until_due': days_until_due
+    })
+    
+    return base_data
+
 @router.get("/", response_model=list[schemas.TaskOut])
 def list_tasks(db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
     tasks = crud.get_tasks(db, uid)
     # Only return non-deleted tasks
     return [serialize_task(t) for t in tasks if not getattr(t, 'deleted', False)]
+
+@router.get("/calendar", response_model=list[schemas.CalendarTask])
+def get_calendar_tasks(
+    start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
+    end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Get tasks for calendar view within a date range"""
+    try:
+        # Validate date format
+        datetime.strptime(start_date, '%Y-%m-%d')
+        datetime.strptime(end_date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    tasks = crud.get_tasks_by_date_range(db, uid, start_date, end_date)
+    return [serialize_calendar_task(t) for t in tasks]
+
+@router.get("/calendar/month/{year}/{month}", response_model=list[schemas.CalendarTask])
+def get_monthly_tasks(
+    year: int, 
+    month: int, 
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Get all tasks for a specific month"""
+    if month < 1 or month > 12:
+        raise HTTPException(status_code=400, detail="Invalid month. Must be 1-12")
+    
+    tasks = crud.get_tasks_for_month(db, uid, year, month)
+    return [serialize_calendar_task(t) for t in tasks]
+
+@router.get("/calendar/date/{target_date}", response_model=list[schemas.CalendarTask])
+def get_tasks_for_date(
+    target_date: str, 
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Get all tasks for a specific date"""
+    try:
+        datetime.strptime(target_date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    tasks = crud.get_tasks_for_date(db, uid, target_date)
+    return [serialize_calendar_task(t) for t in tasks]
+
+@router.get("/calendar/stats", response_model=schemas.CalendarStats)
+def get_calendar_stats(
+    start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
+    end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Get calendar statistics for a date range"""
+    try:
+        datetime.strptime(start_date, '%Y-%m-%d')
+        datetime.strptime(end_date, '%Y-%m-%d')
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    return crud.get_calendar_stats(db, uid, start_date, end_date)
+
+@router.get("/overdue", response_model=list[schemas.CalendarTask])
+def get_overdue_tasks(db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
+    """Get all overdue tasks for the user"""
+    tasks = crud.get_overdue_tasks(db, uid)
+    return [serialize_calendar_task(t) for t in tasks]
+
+@router.get("/upcoming", response_model=list[schemas.CalendarTask])
+def get_upcoming_tasks(
+    days: int = Query(7, description="Number of days to look ahead"),
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Get upcoming tasks within specified days"""
+    if days < 1 or days > 365:
+        raise HTTPException(status_code=400, detail="Days must be between 1 and 365")
+    
+    tasks = crud.get_upcoming_tasks(db, uid, days)
+    return [serialize_calendar_task(t) for t in tasks]
+
+@router.get("/today", response_model=list[schemas.CalendarTask])
+def get_todays_tasks(db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
+    """Get all tasks due today"""
+    tasks = crud.get_todays_tasks(db, uid)
+    return [serialize_calendar_task(t) for t in tasks]
+
+@router.get("/status/{status}", response_model=list[schemas.CalendarTask])
+def get_tasks_by_status(
+    status: str, 
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Get all tasks with a specific status"""
+    valid_statuses = ['Pending', 'In Progress', 'Completed', 'Archived']
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    tasks = crud.get_tasks_by_status(db, uid, status)
+    return [serialize_calendar_task(t) for t in tasks]
 
 @router.get("/history", response_model=list[schemas.TaskOut])
 def task_history(db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
@@ -120,3 +248,37 @@ def ai_prioritize(db: Session = Depends(get_db), uid: str = Depends(get_current_
         pred = clf.predict([features])[0]
         suggestions[t.id] = pred
     return suggestions
+
+@router.post("/bulk-update", response_model=schemas.BulkUpdateResponse)
+def bulk_update_tasks(
+    task_updates: list[schemas.BulkTaskUpdate],
+    db: Session = Depends(get_db), 
+    uid: str = Depends(get_current_user)
+):
+    """Bulk update multiple tasks - useful for calendar drag & drop operations"""
+    updated_tasks = []
+    errors = []
+    
+    for update_data in task_updates:
+        task_id = update_data.id
+        updates = update_data.updates
+        
+        try:
+            # Create a TaskUpdate object from the updates
+            task_update = schemas.TaskUpdate(**updates)
+            updated_task = crud.update_task(db, uid, task_id, task_update)
+            
+            if updated_task:
+                updated_tasks.append(serialize_task(updated_task))
+            else:
+                errors.append({"task_id": task_id, "error": "Task not found or access denied"})
+                
+        except Exception as e:
+            errors.append({"task_id": task_id, "error": str(e)})
+    
+    return schemas.BulkUpdateResponse(
+        updated_tasks=updated_tasks,
+        errors=errors,
+        success_count=len(updated_tasks),
+        error_count=len(errors)
+    ) 

@@ -1,11 +1,11 @@
 .contact-bar {
   width: 100vw;
   min-width: 0;
-  background: #f4f6f8;
-  border-top: 1.5px solid #e5e7eb;
+  background: var(--main-bg);
+  border-top: 1.5px solid var(--border-color);
   text-align: center;
   font-size: 0.97rem;
-  color: #7c3aed;
+  color: var(--btn-primary-bg);
   padding: 12px 0 8px 0;
   position: fixed;
   left: 0;
@@ -22,16 +22,17 @@
 }
 
 .contact-info a {
-  color: #7c3aed;
+  color: var(--btn-primary-bg);
   text-decoration: none;
   font-weight: 500;
 }
 
 .contact-info a:hover {
   text-decoration: underline;
+  color: var(--btn-primary-hover);
 }
 
 .contact-copyright {
   font-size: 0.93rem;
-  color: #bdbdbd;
+  color: var(--text-muted);
 } 

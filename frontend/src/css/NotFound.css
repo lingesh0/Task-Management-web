@@ -1,4 +1,9 @@
 .notfound-container {
   text-align: center;
   margin-top: 100px;
+  color: var(--text-primary);
+}
+
+.notfound-container h1, .notfound-container h2, .notfound-container p {
+  color: var(--text-primary);
 } 

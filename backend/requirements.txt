@@ -7,3 +7,10 @@ python-dotenv
 pydantic
 fastapi[all]
 scikit-learn
+spacy
+dateparser
+python-dateutil
+nltk
+fastapi-mail
+apscheduler
+python-decouple

@@ -1,10 +1,12 @@
 .task-detail-container {
   max-width: 600px;
   margin: 60px auto;
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  box-shadow: var(--card-shadow);
   padding: 36px 28px;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 .task-detail-header {
   display: flex;
@@ -16,14 +18,16 @@
   font-size: 1.4rem;
   font-weight: 600;
   padding: 6px 10px;
-  border: 1.5px solid #c9c9c9;
+  border: 1.5px solid var(--input-border);
   border-radius: 6px;
   width: 70%;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 .priority-badge {
   padding: 4px 12px;
   border-radius: 16px;
-  color: #222;
+  color: var(--text-primary);
   font-size: 0.95rem;
   font-weight: 600;
   margin-left: 8px;
@@ -34,16 +38,16 @@
   font-size: 0.95rem;
   font-weight: 600;
   margin-right: 8px;
-  background: #e0e7ff;
-  color: #222;
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
 }
-.status-pending { background: #facc15; color: #fff; }
-.status-in\ progress { background: #38bdf8; color: #fff; }
-.status-completed { background: #4ade80; color: #fff; }
-.status-archived { background: #a3a3a3; color: #fff; }
+.status-pending { background: var(--status-warning); color: var(--text-inverse); }
+.status-in\ progress { background: var(--status-info); color: var(--text-inverse); }
+.status-completed { background: var(--status-success); color: var(--text-inverse); }
+.status-archived { background: var(--text-muted); color: var(--text-inverse); }
 .overdue-badge {
-  color: #fff;
-  background: #ef4444;
+  color: var(--text-inverse);
+  background: var(--status-error);
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.95rem;
@@ -51,8 +55,8 @@
   margin-left: 8px;
 }
 .due-today-badge {
-  color: #fff;
-  background: #f59e42;
+  color: var(--text-inverse);
+  background: var(--status-warning);
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.95rem;
@@ -61,18 +65,25 @@
 }
 .task-detail-meta {
   margin-bottom: 18px;
+  color: var(--text-secondary);
 }
 .task-detail-section {
   margin-bottom: 18px;
+}
+.task-detail-section h3 {
+  color: var(--text-primary);
+  margin-bottom: 8px;
 }
 .task-desc-input {
   width: 100%;
   min-height: 60px;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 5px;
   font-size: 1rem;
   resize: vertical;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 .subtask-list {
   list-style: none;
@@ -84,14 +95,15 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 6px;
+  color: var(--text-primary);
 }
 .subtask-done span {
   text-decoration: line-through;
-  color: #888;
+  color: var(--text-muted);
 }
 .subtask-delete-btn {
-  background: #f87171;
-  color: #fff;
+  background: var(--status-error);
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   padding: 2px 8px;
@@ -107,12 +119,14 @@
 .add-subtask-form input {
   flex: 1;
   padding: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 .add-subtask-form button {
-  background: #4f8cff;
-  color: #fff;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
   border: none;
   border-radius: 4px;
   padding: 6px 14px;
@@ -126,48 +140,296 @@
   margin-top: 18px;
 }
 .edit-btn, .save-btn {
-  background: #4f8cff;
-  color: #fff;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.edit-btn:hover, .save-btn:hover {
+  background: var(--btn-primary-hover);
 }
 .delete-btn {
-  background: #f87171;
-  color: #fff;
+  background: var(--status-error);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.delete-btn:hover {
+  background: #dc2626;
 }
 .cancel-btn {
-  background: #e0e0e0;
-  color: #333;
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cancel-btn:hover {
+  background: var(--btn-secondary-hover);
 }
 .delete-confirm-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.18);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
 .delete-confirm-content {
-  background: #fff;
+  background: var(--modal-bg);
   padding: 32px 28px;
   border-radius: 10px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  box-shadow: var(--card-shadow);
   text-align: center;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 .activity-log-section {
   margin-top: 32px;
+}
+.activity-log-section h3 {
+  color: var(--text-primary);
+  margin-bottom: 12px;
 }
 .activity-log-list {
   list-style: none;
   padding: 0;
   margin: 0;
   font-size: 0.98rem;
+  color: var(--text-primary);
 }
 .activity-type {
-  color: #2563eb;
+  color: var(--btn-primary-bg);
   font-weight: 600;
 }
 .activity-meta {
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.93rem;
   margin-left: 8px;
+}
+
+/* Enhanced dark mode styles for TaskDetail */
+[data-theme="dark"] .task-detail-container {
+  background: linear-gradient(135deg, var(--card-bg), #1e1e3f);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .task-title-input {
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .task-title-input:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+}
+
+[data-theme="dark"] .priority-badge {
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .status-badge {
+  background: var(--card-hover-bg);
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .status-pending {
+  background: var(--accent-yellow);
+  color: white;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] .status-in-progress {
+  background: var(--accent-blue);
+  color: white;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] .status-completed {
+  background: var(--accent-green);
+  color: white;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+[data-theme="dark"] .status-archived {
+  background: var(--text-muted);
+  color: white;
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .overdue-badge {
+  background: var(--accent-red);
+  color: white;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .due-today-badge {
+  background: var(--accent-yellow);
+  color: white;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] .task-detail-meta {
+  color: var(--text-secondary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .task-detail-section h3 {
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .task-desc-input {
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .task-desc-input:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+}
+
+[data-theme="dark"] .subtask-list li {
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .subtask-done span {
+  color: var(--text-muted);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .subtask-delete-btn {
+  background: var(--accent-red);
+  color: white;
+  text-shadow: var(--text-shadow);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .subtask-delete-btn:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+[data-theme="dark"] .add-subtask-form input {
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .add-subtask-form input:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+}
+
+[data-theme="dark"] .add-subtask-form button {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  text-shadow: var(--text-shadow);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .add-subtask-form button:hover {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+}
+
+[data-theme="dark"] .edit-btn,
+[data-theme="dark"] .save-btn {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  text-shadow: var(--text-shadow);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .edit-btn:hover,
+[data-theme="dark"] .save-btn:hover {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+}
+
+[data-theme="dark"] .delete-btn {
+  background: linear-gradient(135deg, var(--accent-red), #dc2626);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  text-shadow: var(--text-shadow);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .delete-btn:hover {
+  background: linear-gradient(135deg, #dc2626, var(--accent-red));
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+[data-theme="dark"] .cancel-btn {
+  background: linear-gradient(135deg, var(--accent-yellow), #d97706);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  text-shadow: var(--text-shadow);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .cancel-btn:hover {
+  background: linear-gradient(135deg, #d97706, var(--accent-yellow));
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+[data-theme="dark"] .delete-confirm-modal {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] .delete-confirm-content {
+  background: linear-gradient(135deg, var(--modal-bg), #1e1e3f);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .activity-log-section h3 {
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .activity-log-list {
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+}
+
+[data-theme="dark"] .activity-type {
+  color: var(--accent-purple);
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+[data-theme="dark"] .activity-meta {
+  color: var(--text-secondary);
+  text-shadow: var(--text-shadow);
 } 

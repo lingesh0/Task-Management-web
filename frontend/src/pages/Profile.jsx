@@ -2,35 +2,41 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, getIdToken } from '../firebase';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { onAuthStateChanged, updateProfile, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
+import { onAuthStateChanged, updateProfile, sendPasswordResetEmail, deleteUser, updateEmail } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import '../css/Profile.css';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 
 const storage = getStorage();
 
 const API_BASE = 'http://localhost:8000';
 
 const Profile = () => {
-    const [user, setUser] = useState(null);
+    const { t } = useTranslation();
+    const { user, updateUserProfile } = useAuth();
     const [profile, setProfile] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [displayName, setDisplayName] = useState('');
+    const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [uploading, setUploading] = useState(false);
     const [photoURL, setPhotoURL] = useState('');
     const [theme, setTheme] = useState('light');
     const [showResetModal, setShowResetModal] = useState(false);
+    const [emailEditMode, setEmailEditMode] = useState(false);
+    const [newEmail, setNewEmail] = useState('');
     const fileInputRef = useRef();
     const navigate = useNavigate();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) fetchProfile();
-        });
-        return () => unsubscribe();
-    }, []);
+        if (user) {
+            setDisplayName(user.displayName || '');
+            setPhotoURL(user.photoURL || '');
+            setEmail(user.email || '');
+        }
+    }, [user]);
 
     const fetchProfile = async () => {
         try {
@@ -48,6 +54,9 @@ const Profile = () => {
             setDisplayName(data.display_name || '');
             setPhotoURL(data.photo_url || '');
             setTheme(data.theme_preference || 'light');
+            if (data.email) {
+                setEmail(data.email);
+            }
         } catch (err) {
             setError('Failed to fetch profile');
         }
@@ -82,6 +91,58 @@ const Profile = () => {
             setEditMode(false);
         } catch (err) {
             setError("Failed to update profile");
+        }
+    };
+
+    const handleEmailUpdate = async (e) => {
+        e.preventDefault();
+        setError("");
+        setSuccess("");
+        
+        if (!newEmail || newEmail === email) {
+            setError("Please enter a new email address");
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newEmail)) {
+            setError("Please enter a valid email address");
+            return;
+        }
+
+        try {
+            const token = await getIdToken();
+            const res = await fetch(`${API_BASE}/profile/email`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    email: newEmail,
+                    display_name: displayName,
+                    photo_url: photoURL,
+                    theme_preference: theme,
+                }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.detail || 'Failed to update email');
+            }
+
+            const data = await res.json();
+            setProfile(prev => ({ ...prev, email: newEmail }));
+            setEmail(newEmail);
+            setSuccess("Email updated successfully! Please check your new email for verification.");
+            setEmailEditMode(false);
+            setNewEmail('');
+            
+            // Reload user to get updated email
+            await reloadUser();
+        } catch (err) {
+            setError(err.message || "Failed to update email");
         }
     };
 
@@ -167,21 +228,23 @@ const Profile = () => {
     };
 
     if (error) {
-        return <div className="profile-error">{error}</div>;
+        return <div className="profile-error">{t('profile.error', { error })}</div>;
     }
 
     if (!user) {
-        return <div className="profile-container">Please log in to view your profile.</div>;
+        return <div className="profile-container">{t('profile.loginToView')}</div>;
     }
 
     return (
         <div className="profile-container">
-            <h1>User Profile</h1>
+            <div className="dashboard-header">
+                <h1>Profile</h1>
+            </div>
             <div className="profile-avatar-section">
                 {photoURL || user.photoURL ? (
                     <img
                         src={photoURL || user.photoURL}
-                        alt="avatar"
+                        alt={t('profile.avatar')}
                         className="profile-avatar-img"
                     />
                 ) : (
@@ -197,41 +260,57 @@ const Profile = () => {
                     onChange={handlePhotoUpload}
                 />
                 <button onClick={() => fileInputRef.current.click()} disabled={uploading}>
-                    {uploading ? 'Uploading...' : 'Upload Photo'}
+                    {uploading ? t('profile.uploading') : t('profile.uploadPhoto')}
                 </button>
             </div>
-            <p><b>Email:</b> {user.email}</p>
-            <p><b>UID:</b> {user.uid}</p>
-            <p><b>Name:</b> {editMode ? (
+            
+            <p><b>{t('profile.email')}:</b> 
+                {emailEditMode ? (
+                    <form onSubmit={handleEmailUpdate} style={{ display: 'inline' }}>
+                        <input 
+                            type="email" 
+                            value={newEmail} 
+                            onChange={e => setNewEmail(e.target.value)}
+                            placeholder={t('profile.enterNewEmail')}
+                            style={{ marginLeft: '8px', width: '200px' }}
+                        />
+                        <button type="submit" style={{ marginLeft: '8px' }}>{t('general.save')}</button>
+                        <button type="button" onClick={() => { setEmailEditMode(false); setNewEmail(''); }} style={{ marginLeft: '8px' }}>{t('general.cancel')}</button>
+                    </form>
+                ) : (
+                    <>
+                        {email}
+                        <button onClick={() => { setEmailEditMode(true); setNewEmail(email); }} style={{ marginLeft: '8px' }}>{t('general.edit')}</button>
+                    </>
+                )}
+            </p>
+            
+            <p><b>{t('profile.uid')}:</b> {user.uid}</p>
+            <p><b>{t('profile.name')}:</b> {editMode ? (
                 <input value={displayName} onChange={e => setDisplayName(e.target.value)} />
             ) : (
-                profile?.display_name || 'Not set'
+                profile?.display_name || t('profile.notSet')
             )}</p>
-            <p><b>Registered:</b> {user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : 'N/A'}</p>
-            <p><b>Last Sign-In:</b> {user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : 'N/A'}</p>
-            <div className="profile-theme-section">
-                <label><b>Theme:</b></label>
-                <select value={theme} onChange={handleThemeChange}>
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                </select>
-            </div>
+            <p><b>{t('profile.registered')}:</b> {user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : t('profile.na')}</p>
+            <p><b>{t('profile.lastSignIn')}:</b> {user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : t('profile.na')}</p>
+            
             {editMode ? (
                 <>
-                    <button onClick={handleProfileUpdate}>Save</button>
-                    <button onClick={() => setEditMode(false)}>Cancel</button>
+                    <button onClick={handleProfileUpdate}>{t('general.save')}</button>
+                    <button onClick={() => setEditMode(false)}>{t('general.cancel')}</button>
                 </>
             ) : (
-                <button onClick={() => setEditMode(true)}>Edit Profile</button>
+                <button onClick={() => setEditMode(true)} className="edit-profile-btn" style={{ marginTop: '24px', width: '100%' }}>{t('profile.editProfile')}</button>
             )}
-            <button onClick={handleChangePassword}>Change Password</button>
-            <button onClick={handleDeleteAccount} className="delete-account-btn">Delete Account</button>
+            <button onClick={handleChangePassword}>{t('profile.changePassword')}</button>
+            <button onClick={handleDeleteAccount} className="delete-account-btn">{t('profile.deleteAccount')}</button>
+           
             {success && <div className="success">{success}</div>}
             {showResetModal && (
                 <div className="reset-modal">
                     <div className="reset-modal-content">
-                        <p>Password reset email sent! Please check your inbox.</p>
-                        <button onClick={() => setShowResetModal(false)}>Close</button>
+                        <p>{t('profile.passwordResetSent')}</p>
+                        <button onClick={() => setShowResetModal(false)}>{t('general.close')}</button>
                     </div>
                 </div>
             )}

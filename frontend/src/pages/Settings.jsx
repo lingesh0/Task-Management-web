@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db, getIdToken } from '../firebase';
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { useTheme } from '../contexts/ThemeContext';
+import ThemeToggle from '../components/ThemeToggle';
 import '../css/Profile.css';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 
 const APP_VERSION = '1.0.0'; // Update as needed
 const LAST_UPDATED = '2024-05-01'; // Update as needed
@@ -18,7 +22,6 @@ const API_BASE = 'http://localhost:8000';
 
 const Settings = () => {
   const [user, setUser] = useState(null);
-  const [theme, setTheme] = useState('light');
   const [language, setLanguage] = useState('en');
   const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('dueDate');
@@ -29,6 +32,10 @@ const Settings = () => {
   const [photoURL, setPhotoURL] = useState('');
   const [showProfileModal, setShowProfileModal] = useState(false);
   const navigate = useNavigate();
+  
+  // Use the theme context
+  const { theme, setTheme, isDark, isLight } = useTheme();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -43,7 +50,6 @@ const Settings = () => {
           const data = await res.json();
           setDisplayName(data.display_name || '');
           setPhotoURL(data.photo_url || '');
-          setTheme(data.theme_preference || 'light');
           setLanguage(data.language_preference || 'en');
           setNotifications(data.reminders_enabled !== false);
         }
@@ -54,11 +60,23 @@ const Settings = () => {
     return () => unsub();
   }, []);
 
-  const handleThemeChange = async (e) => {
-    const newTheme = e.target.value;
+  const handleThemeChange = async (newTheme) => {
     setTheme(newTheme);
-    if (user) await updateDoc(doc(db, 'users', user.uid), { theme: newTheme });
-    document.documentElement.setAttribute('data-theme', newTheme);
+    if (user) {
+      try {
+        const token = await getIdToken();
+        await fetch(`${API_BASE}/profile/`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ theme_preference: newTheme }),
+        });
+      } catch (error) {
+        console.error('Failed to save theme preference:', error);
+      }
+    }
   };
 
   const handleProfileUpdate = async (e) => {
@@ -100,20 +118,11 @@ const Settings = () => {
     }
   };
 
-  const handleLanguageChange = async (e) => {
-    const newLang = e.target.value;
+  const handleLanguageChange = (event) => {
+    const newLang = event.target.value;
     setLanguage(newLang);
-    if (user) {
-      const token = await getIdToken();
-      await fetch(`${API_BASE}/profile/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ language_preference: newLang }),
-      });
-    }
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('i18nextLng', newLang);
   };
 
   const handleNotificationsChange = async (e) => {
@@ -215,64 +224,65 @@ const Settings = () => {
 
   return (
     <div className="profile-container">
-      <h1>Settings</h1>
-      <div className="profile-theme-section">
-        <button onClick={() => setShowProfileModal(true)}>Edit Profile</button>
+      <div className="dashboard-header">
+        <h1>Settings</h1>
       </div>
       <div className="profile-theme-section">
-        <label><b>Theme:</b></label>
-        <select value={theme} onChange={handleThemeChange}>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
+        <label><b>{t('settings.theme')}:</b></label>
+        <div className="theme-controls">
+          <ThemeToggle size="medium" />
+          <span className="theme-label">
+            {isDark ? t('settings.darkMode', 'Dark Mode') : t('settings.lightMode', 'Light Mode')}
+          </span>
+        </div>
       </div>
       <div className="profile-theme-section">
-        <label><b>Language:</b></label>
+        <label><b>{t('settings.language')}:</b></label>
         <select value={language} onChange={handleLanguageChange}>
           {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
         </select>
       </div>
       <div className="profile-theme-section">
-        <label><b>Task View:</b></label>
+        <label><b>{t('settings.taskView')}:</b></label>
         <select value={viewMode} onChange={handleViewModeChange}>
-          <option value="list">List</option>
-          <option value="grid">Grid</option>
+          <option value="list">{t('settings.list', 'List')}</option>
+          <option value="grid">{t('settings.grid', 'Grid')}</option>
         </select>
       </div>
       <div className="profile-theme-section">
-        <label><b>Default Sort By:</b></label>
+        <label><b>{t('settings.defaultSortBy')}:</b></label>
         <select value={sortBy} onChange={handleSortByChange}>
-          <option value="dueDate">Due Date</option>
-          <option value="priority">Priority</option>
-          <option value="createdAt">Created At</option>
+          <option value="dueDate">{t('settings.dueDate', 'Due Date')}</option>
+          <option value="priority">{t('settings.priority', 'Priority')}</option>
+          <option value="createdAt">{t('settings.createdAt', 'Created At')}</option>
         </select>
       </div>
       <div className="profile-theme-section">
-        <label><b>Email Reminders:</b></label>
+        <label><b>{t('settings.emailReminders')}:</b></label>
         <input type="checkbox" checked={notifications} onChange={handleNotificationsChange} />
       </div>
       <div className="profile-theme-section">
-        <button onClick={handleChangePassword}>Change Password</button>
-        <button onClick={handleClearCompleted}>Clear Completed Tasks</button>
-        <button onClick={() => handleExportTasks('csv')}>Export Tasks (CSV)</button>
-        <button onClick={() => handleExportTasks('pdf')}>Export Tasks (PDF)</button>
-        <button onClick={handleResetSettings}>Reset Settings</button>
-        <button onClick={handleLogout} className="delete-account-btn">Logout</button>
+        <button onClick={handleChangePassword}>{t('settings.changePassword')}</button>
+        <button onClick={handleClearCompleted}>{t('settings.clearCompleted')}</button>
+        <button onClick={() => handleExportTasks('csv')}>{t('settings.exportTasksCSV')}</button>
+        <button onClick={() => handleExportTasks('pdf')}>{t('settings.exportTasksPDF')}</button>
+        <button onClick={handleResetSettings}>{t('settings.resetSettings')}</button>
+        <button onClick={handleLogout} className="delete-account-btn">{t('settings.logout')}</button>
       </div>
       {/* Profile Edit Modal */}
       {showProfileModal && (
         <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <form onSubmit={handleProfileUpdate}>
-              <h2>Edit Profile</h2>
-              <label>Name:</label>
+              <h2>{t('profile.editProfile')}</h2>
+              <label>{t('profile.name')}:</label>
               <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="task-input" />
-              <label>Avatar:</label>
-              <input type="text" value={photoURL} onChange={e => setPhotoURL(e.target.value)} className="task-input" placeholder="Paste image URL or upload below" />
+              <label>{t('profile.avatar', 'Avatar')}:</label>
+              <input type="text" value={photoURL} onChange={e => setPhotoURL(e.target.value)} className="task-input" placeholder={t('profile.avatarPlaceholder', 'Paste image URL or upload below')} />
               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="task-input" />
               <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 12 }}>
-                <button className="add-task-btn" type="submit">Save</button>
-                <button className="add-task-btn cancel-btn" type="button" onClick={() => setShowProfileModal(false)}>Cancel</button>
+                <button className="add-task-btn" type="submit">{t('general.save')}</button>
+                <button className="add-task-btn cancel-btn" type="button" onClick={() => setShowProfileModal(false)}>{t('general.cancel')}</button>
               </div>
             </form>
           </div>

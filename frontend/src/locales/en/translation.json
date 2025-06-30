@@ -1,0 +1,91 @@
+{
+  "general": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error: {{message}}",
+    "success": "Success!",
+    "confirm": "Are you sure?"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password"
+  },
+  "home": {
+    "title": "Welcome to Task Manager",
+    "subtitle": "Organize your tasks efficiently",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "addTask": "Add Task",
+    "editTask": "Edit Task",
+    "deleteTask": "Delete Task",
+    "taskName": "Task Name",
+    "description": "Description",
+    "dueDate": "Due Date",
+    "priority": "Priority",
+    "status": "Status",
+    "tags": "Tags",
+    "noTasks": "No tasks found",
+    "noTasksWorkspace": "No tasks in your workspace. Add your first task!",
+    "noTasksFiltered": "No tasks match your filters.",
+    "addNewTask": "Add New Task",
+    "markComplete": "Mark as Complete",
+    "filterTasks": "Filter Tasks"
+  },
+  "profile": {
+    "title": "User Profile",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "deleteAccount": "Delete Account",
+    "registered": "Registered",
+    "lastSignIn": "Last Sign-In",
+    "name": "Name",
+    "email": "Email",
+    "uid": "UID",
+    "avatar": "Avatar",
+    "uploading": "Uploading...",
+    "uploadPhoto": "Upload Photo",
+    "enterNewEmail": "Enter new email",
+    "notSet": "Not set",
+    "na": "N/A",
+    "passwordResetSent": "Password reset email sent! Please check your inbox.",
+    "loginToView": "Please log in to view your profile",
+    "error": "Error: {{error}}"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "taskView": "Task View",
+    "defaultSortBy": "Default Sort By",
+    "emailReminders": "Email Reminders",
+    "notifications": "Notifications",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "list": "List",
+    "grid": "Grid",
+    "dueDate": "Due Date",
+    "priority": "Priority",
+    "createdAt": "Created At",
+    "clearCompleted": "Clear Completed Tasks",
+    "exportTasksCSV": "Export Tasks (CSV)",
+    "exportTasksPDF": "Export Tasks (PDF)",
+    "resetSettings": "Reset Settings",
+    "confirmReset": "Are you sure you want to reset all settings?"
+  },
+  "languages": {
+    "en": "English",
+    "ta": "Tamil",
+    "hi": "Hindi"
+  }
+} 

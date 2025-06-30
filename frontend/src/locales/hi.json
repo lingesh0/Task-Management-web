@@ -1,0 +1,31 @@
+{
+  "profile": {
+    "userProfile": "यूज़र प्रोफ़ाइल",
+    "editProfile": "प्रोफ़ाइल संपादित करें",
+    "changePassword": "पासवर्ड बदलें",
+    "deleteAccount": "खाता हटाएँ",
+    "registered": "पंजीकृत",
+    "lastSignIn": "अंतिम साइन-इन",
+    "name": "नाम",
+    "email": "ईमेल",
+    "uid": "यूआईडी"
+  },
+  "settings": {
+    "settings": "सेटिंग्स",
+    "theme": "थीम",
+    "language": "भाषा",
+    "taskView": "कार्य दृश्य",
+    "defaultSortBy": "डिफ़ॉल्ट क्रमबद्ध करें",
+    "emailReminders": "ईमेल रिमाइंडर",
+    "changePassword": "पासवर्ड बदलें",
+    "clearCompleted": "पूर्ण कार्य साफ़ करें",
+    "exportTasksCSV": "कार्य निर्यात करें (CSV)",
+    "exportTasksPDF": "कार्य निर्यात करें (PDF)",
+    "resetSettings": "सेटिंग्स रीसेट करें",
+    "logout": "लॉगआउट"
+  },
+  "general": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें"
+  }
+} 

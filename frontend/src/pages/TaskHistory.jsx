@@ -62,7 +62,9 @@ const TaskHistory = () => {
 
   return (
     <div className="task-tracking-container">
-      <h1>Task History</h1>
+      <div className="dashboard-header">
+        <h1>Task History</h1>
+      </div>
       <input
         type="text"
         placeholder="Search tasks..."

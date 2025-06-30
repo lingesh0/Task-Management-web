@@ -1,93 +1,154 @@
 .login-container {
   max-width: 400px;
   margin: 80px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
   padding: 40px 32px;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+}
+
+.login-container:hover {
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  transform: translateY(-2px);
+}
+
 .login-container h2 {
   margin-bottom: 24px;
+  color: var(--text-primary);
+  font-weight: 700;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+
 .login-container form div {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
+
 label {
   display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
+
 input[type="email"], input[type="password"], input[type="text"] {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #c9c9c9;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
   font-size: 1rem;
-  background: #f9f9f9;
-  transition: border 0.2s;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
 }
+
 input:focus {
-  border: 1.5px solid #4f8cff;
+  border: 2px solid var(--input-focus-border);
   outline: none;
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }
+
 button {
-  background: #4f8cff;
-  color: #fff;
+  background: linear-gradient(135deg, var(--btn-primary-bg), var(--btn-primary-hover));
+  color: var(--btn-primary-fg);
   border: none;
-  border-radius: 6px;
-  padding: 10px 22px;
+  border-radius: 8px;
+  padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
 }
+
 button:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, var(--btn-primary-hover), #8b5cf6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
+
 .error {
-  color: #e63946;
+  color: var(--status-error);
   margin-top: 8px;
   font-size: 0.97rem;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-weight: 500;
 }
+
 .google-login-btn {
   margin-top: 16px;
-  background: #fff;
-  color: #444;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px 16px;
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 16px;
   font-size: 16px;
   display: flex;
   align-items: center;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 .google-login-btn:hover {
-  background: #f7f7f7;
+  background: var(--btn-secondary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+
 .google-icon {
   display: inline-block;
   vertical-align: middle;
 }
+
 .login-bg-gradient {
   min-height: 100vh;
-  background: linear-gradient(120deg, #7c3aed 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .login-card-split {
   display: flex;
-  background: #fff;
-  border-radius: 32px;
-  box-shadow: 0 4px 32px rgba(124,58,237,0.10);
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
   overflow: hidden;
   min-width: 700px;
   max-width: 900px;
   width: 100%;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
 }
+
+.login-card-split:hover {
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  transform: translateY(-2px);
+}
+
 .login-illustration {
-  background: linear-gradient(120deg, #a78bfa 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
   flex: 1.1;
   display: flex;
   flex-direction: column;
@@ -95,79 +156,119 @@ button:hover {
   justify-content: center;
   padding: 48px 24px;
   color: #fff;
+  position: relative;
+  overflow: hidden;
 }
+
+.login-illustration::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
 .login-illustration-caption {
   margin-top: 32px;
   font-size: 1.2rem;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   color: #fff;
+  position: relative;
+  z-index: 1;
 }
+
 .login-form-side {
   flex: 1;
-  background: #fff;
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 48px 36px;
   min-width: 320px;
+  color: var(--text-primary);
 }
+
 .login-form-header {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #7c3aed;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 24px;
 }
+
 .login-form label {
   font-size: 1rem;
-  color: #7c3aed;
-  margin-bottom: 6px;
-  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-weight: 600;
 }
+
 .login-form input[type="email"],
 .login-form input[type="password"] {
   width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid #a78bfa;
+  padding: 12px 16px;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 1rem;
-  margin-bottom: 18px;
-  background: #f6f4ff;
-  transition: border 0.2s;
+  margin-bottom: 20px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
 }
+
 .login-form input:focus {
-  border: 2px solid #7c3aed;
+  border: 2px solid var(--input-focus-border);
   outline: none;
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }
+
 .login-btn {
   width: 100%;
-  background: linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 12px 0;
+  padding: 14px 0;
   font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
+
 .login-btn:hover {
-  background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
 }
+
 .login-form-footer {
-  margin-top: 18px;
+  margin-top: 20px;
   text-align: center;
-  color: #7c3aed;
+  color: var(--text-secondary);
   font-size: 1rem;
 }
+
 .login-form-footer a, .login-form-footer .forgot-link {
-  color: #7c3aed;
-  text-decoration: underline;
-  font-weight: 500;
+  color: var(--btn-primary-bg);
+  text-decoration: none;
+  font-weight: 600;
   margin: 0 4px;
   cursor: pointer;
+  transition: color 0.3s ease;
 }
+
 .login-form-footer a:hover, .login-form-footer .forgot-link:hover {
-  color: #4c1d95;
+  color: var(--btn-primary-hover);
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 } 

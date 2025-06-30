@@ -1,0 +1,31 @@
+{
+  "profile": {
+    "userProfile": "பயனர் சுயவிவரம்",
+    "editProfile": "சுயவிவரத்தை திருத்து",
+    "changePassword": "கடவுச்சொல்லை மாற்று",
+    "deleteAccount": "கணக்கை நீக்கு",
+    "registered": "பதிவுசெய்யப்பட்டது",
+    "lastSignIn": "கடைசி உள்நுழைவு",
+    "name": "பெயர்",
+    "email": "மின்னஞ்சல்",
+    "uid": "UID"
+  },
+  "settings": {
+    "settings": "அமைப்புகள்",
+    "theme": "தீம்",
+    "language": "மொழி",
+    "taskView": "பணி பார்வை",
+    "defaultSortBy": "இயல்புநிலை வரிசைப்படுத்து",
+    "emailReminders": "மின்னஞ்சல் நினைவூட்டல்கள்",
+    "changePassword": "கடவுச்சொல்லை மாற்று",
+    "clearCompleted": "நிறைவு பெற்ற பணிகளை நீக்கு",
+    "exportTasksCSV": "பணிகளை ஏற்றுமதி செய் (CSV)",
+    "exportTasksPDF": "பணிகளை ஏற்றுமதி செய் (PDF)",
+    "resetSettings": "அமைப்புகளை மீட்டமை",
+    "logout": "வெளியேறு"
+  },
+  "general": {
+    "save": "சேமி",
+    "cancel": "ரத்து செய்"
+  }
+} 

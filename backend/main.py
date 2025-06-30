@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine, SessionLocal
 import models
-from routes import tasks, profile
+from routes import tasks, profile, ai
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -16,5 +16,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Task Management API is running!"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Server is running"}
+
 app.include_router(tasks.router)
 app.include_router(profile.router)
+app.include_router(ai.router)

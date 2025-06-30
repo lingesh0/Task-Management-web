@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { auth, getIdToken } from '../firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import '../css/Navbar.css';
 
 const API_BASE = 'http://localhost:8000';
 
-const Topbar = () => {
+const Topbar = ({ sidebarOpen, setSidebarOpen }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const location = useLocation();
-  const navigate = useNavigate();
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -33,11 +33,6 @@ const Topbar = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate('/');
-  };
-
   // Helper to get profile letter
   const getProfileLetter = () => {
     if (profile && profile.display_name && profile.display_name.trim().length > 0) {
@@ -50,7 +45,24 @@ const Topbar = () => {
 
   return (
     <header className="navbar">
-      <Link to="/" className="navbar-logo">Task Manager</Link>
+      <div className="navbar-left">
+        {/* Sidebar toggle button - only show on home page */}
+        {isHomePage && user && (
+          <button 
+            className={`navbar-sidebar-toggle ${sidebarOpen ? 'active' : ''}`}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        )}
+        <Link to="/" className="navbar-logo">Task Manager</Link>
+      </div>
+      
       <div className="navbar-links">
         {!user && (
           <>
@@ -59,22 +71,19 @@ const Topbar = () => {
           </>
         )}
         {user && (
-          <>
-            <Link to="/profile" className="navbar-avatar-link">
-              {profile && profile.photo_url ? (
-                <img
-                  src={profile.photo_url}
-                  alt="avatar"
-                  className="navbar-avatar-img"
-                />
-              ) : (
-                <div className="navbar-avatar-img navbar-avatar-fallback">
-                  {getProfileLetter()}
-                </div>
-              )}
-            </Link>
-            <button className="navbar-logout-btn" onClick={handleLogout}>Logout</button>
-          </>
+          <Link to="/profile" className="navbar-avatar-link">
+            {profile && profile.photo_url ? (
+              <img
+                src={profile.photo_url}
+                alt="avatar"
+                className="navbar-avatar-img"
+              />
+            ) : (
+              <div className="navbar-avatar-img navbar-avatar-fallback">
+                {getProfileLetter()}
+              </div>
+            )}
+          </Link>
         )}
       </div>
     </header>
