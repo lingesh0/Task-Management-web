@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getIdToken } from '../firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -298,6 +298,16 @@ const TaskTracking = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
   const { loading: firestoreLoading, error: firestoreError } = useTaskView();
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [voicePopup, setVoicePopup] = useState({ open: false, message: '', type: 'info' });
+  const [voiceTaskModal, setVoiceTaskModal] = useState({ open: false, transcript: '', parsed: null, loading: false, error: '' });
+  const recognitionRef = useRef(null);
+  const [scheduleSuggestion, setScheduleSuggestion] = useState('');
+  const [recurrenceSuggestion, setRecurrenceSuggestion] = useState('');
+  const [reminderSuggestion, setReminderSuggestion] = useState('');
+  const [smartScheduleModal, setSmartScheduleModal] = useState({ open: false, suggested: '', reason: '', loading: false, error: '' });
 
   useEffect(() => {
     const auth = getAuth();
@@ -312,6 +322,12 @@ const TaskTracking = () => {
 
   useEffect(() => {
     fetchTasks();
+  }, []);
+
+  useEffect(() => {
+    setVoiceSupported(
+      typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
+    );
   }, []);
 
   const fetchTasks = async () => {
@@ -336,6 +352,122 @@ const TaskTracking = () => {
   const handleAddSubtask = () => setSubtasks([...subtasks, '']);
   const handleSubtaskChange = (i, val) => setSubtasks(subtasks.map((s, idx) => idx === i ? val : s));
   const handleRemoveSubtask = (i) => setSubtasks(subtasks.filter((_, idx) => idx !== i));
+
+  const handleVoiceInput = () => {
+    setVoiceError('');
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setVoicePopup({ open: true, message: 'Voice input not supported in this browser.', type: 'error' });
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setVoiceActive(false);
+      // Show modal and start parsing
+      setVoiceTaskModal({ open: true, transcript, parsed: null, loading: true, error: '' });
+      handleParseVoiceTask(transcript);
+    };
+    recognition.onerror = (event) => {
+      let msg = '';
+      if (event.error === 'not-allowed' || event.error === 'denied') {
+        msg = 'Microphone access denied. Please allow microphone permissions in your browser settings.';
+      } else if (event.error === 'network') {
+        msg = 'Network error: Please check your internet connection and ensure your browser allows microphone access. If you are on localhost, try using HTTPS or a supported browser.';
+      } else if (event.error === 'no-speech') {
+        msg = 'No voice detected. Please try speaking again.';
+      } else {
+        msg = 'Voice input error: ' + event.error + '. Try again or check your browser settings.';
+      }
+      setVoiceError(msg);
+      setVoicePopup({ open: true, message: msg, type: 'error' });
+      setVoiceActive(false);
+    };
+    recognition.onend = () => setVoiceActive(false);
+    recognitionRef.current = recognition;
+    setVoiceActive(true);
+    recognition.start();
+  };
+
+  const handleParseVoiceTask = async (transcript) => {
+    setVoiceTaskModal(modal => ({ ...modal, loading: true, error: '' }));
+    try {
+      const token = await getIdToken();
+      const res = await fetch(`${API_BASE}/ai/parse-task`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: transcript })
+      });
+      if (!res.ok) throw new Error('Failed to parse task');
+      const data = await res.json();
+      setVoiceTaskModal(modal => ({ ...modal, parsed: data, loading: false, error: '' }));
+    } catch (err) {
+      setVoiceTaskModal(modal => ({ ...modal, loading: false, error: 'Could not parse task from voice. Please edit or try again.' }));
+    }
+  };
+
+  const handleConfirmVoiceTask = async () => {
+    if (!voiceTaskModal.parsed) return;
+    setVoiceTaskModal(modal => ({ ...modal, loading: true, error: '' }));
+    try {
+      const token = await getIdToken();
+      await fetch(`${API_BASE}/tasks/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: voiceTaskModal.parsed.title || '',
+          description: voiceTaskModal.parsed.description || '',
+          due_date: voiceTaskModal.parsed.due_date || '',
+          priority: voiceTaskModal.parsed.priority || 'Low',
+          status: 'Pending',
+          reminder: '',
+          tags: [],
+          subtasks: [],
+          recurrence: null,
+        })
+      });
+      setVoiceTaskModal({ open: false, transcript: '', parsed: null, loading: false, error: '' });
+      setVoicePopup({ open: true, message: 'Task added from voice!', type: 'success' });
+      // Optionally, refresh tasks here
+      fetchTasks && fetchTasks();
+    } catch (err) {
+      setVoiceTaskModal(modal => ({ ...modal, loading: false, error: 'Failed to add task. Please try again.' }));
+    }
+  };
+
+  const handleSmartSchedule = async () => {
+    setScheduleSuggestion('');
+    try {
+      const token = await getIdToken();
+      const res = await fetch(`${API_BASE}/ai/schedule-suggestion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title, description, due_date: dueDate, priority }),
+      });
+      const data = await res.json();
+      setScheduleSuggestion(data.suggested_time || 'No suggestion');
+      setSmartScheduleModal({ open: true, suggested: data.suggested_time || '', reason: data.reason || '', loading: false, error: '' });
+    } catch {
+      setScheduleSuggestion('Failed to get suggestion');
+    }
+  };
+
+  const fetchRecurrenceAndReminder = async () => {
+    try {
+      const token = await getIdToken();
+      const [recRes, remRes] = await Promise.all([
+        fetch(`${API_BASE}/ai/recurrence-predict`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/ai/optimize-reminder`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      const recData = await recRes.json();
+      const remData = await remRes.json();
+      setRecurrenceSuggestion(recData.recurrence ? `Suggested recurrence: ${recData.recurrence}` : '');
+      setReminderSuggestion(remData.suggested_reminder ? `Reminder tip: ${remData.suggested_reminder}` : '');
+    } catch {}
+  };
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -373,6 +505,7 @@ const TaskTracking = () => {
       setTags('');
       setSubtasks(['']);
       setRecurrence('None');
+      await fetchRecurrenceAndReminder();
     } catch (err) {
       setError('Failed to add task');
     }
@@ -632,6 +765,15 @@ const TaskTracking = () => {
               onChange={e => setTitle(e.target.value)}
               className="task-input"
             />
+            <button type="button" onClick={handleVoiceInput} style={{ marginLeft: 8 }} disabled={!voiceSupported || voiceActive}>
+              🎤 Voice to Task
+            </button>
+            {voiceActive && <span style={{ color: '#6366f1' }}>Listening...</span>}
+            {voiceError && <span style={{ color: 'red' }}>{voiceError}</span>}
+            <button type="button" onClick={handleSmartSchedule} style={{ marginLeft: 8 }}>
+              🧠 Smart Schedule
+            </button>
+            {scheduleSuggestion && <span style={{ color: '#10b981', marginLeft: 8 }}>{scheduleSuggestion}</span>}
             <textarea
               placeholder="Description (optional)"
               value={description}
@@ -686,6 +828,8 @@ const TaskTracking = () => {
             <button className="add-task-btn" type="submit">Add Task</button>
             {error && <div className="task-error">{error}</div>}
           </form>
+          {recurrenceSuggestion && <div style={{ color: '#a21caf', marginTop: 8 }}>{recurrenceSuggestion}</div>}
+          {reminderSuggestion && <div style={{ color: '#f59e42', marginTop: 4 }}>{reminderSuggestion}</div>}
           <div className="task-tracking-filters">
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
               <option value="">All Statuses</option>
@@ -927,6 +1071,127 @@ const TaskTracking = () => {
               })}
             </ul>
             <button className="add-task-btn" onClick={() => setShowAISuggestions(false)} style={{ width: '100%' }}>Close</button>
+          </div>
+        </div>
+      )}
+      {/* Voice Input Popup */}
+      {voicePopup.open && (
+        <div style={{
+          position: 'fixed',
+          top: 32,
+          right: 32,
+          zIndex: 2000,
+          background: 'var(--card-bg, #fff)',
+          color: voicePopup.type === 'error' ? '#ef4444' : '#10b981',
+          border: `2px solid ${voicePopup.type === 'error' ? '#ef4444' : '#10b981'}`,
+          borderRadius: 12,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+          padding: '20px 32px',
+          minWidth: 260,
+          maxWidth: 400,
+          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          transition: 'all 0.2s',
+        }}>
+          <span style={{ fontSize: 22 }}>
+            {voicePopup.type === 'error' ? '❌' : '✅'}
+          </span>
+          <span style={{ flex: 1 }}>{voicePopup.message}</span>
+          <button onClick={() => setVoicePopup({ ...voicePopup, open: false })} style={{ background: 'none', border: 'none', color: 'inherit', fontSize: 20, cursor: 'pointer', marginLeft: 8 }}>×</button>
+        </div>
+      )}
+      {/* Voice Task Modal */}
+      {voiceTaskModal.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.25)',
+          zIndex: 3000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'var(--card-bg, #fff)',
+            borderRadius: 16,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            padding: 32,
+            minWidth: 320,
+            maxWidth: 420,
+            width: '100%',
+            position: 'relative',
+            display: 'flex', flexDirection: 'column', gap: 16
+          }}>
+            <button onClick={() => setVoiceTaskModal({ open: false, transcript: '', parsed: null, loading: false, error: '' })} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>×</button>
+            <h3 style={{ margin: 0, fontWeight: 700 }}>Voice Task Detected</h3>
+            <div style={{ fontSize: 15, color: '#6366f1', marginBottom: 6 }}><b>Transcript:</b> {voiceTaskModal.transcript}</div>
+            {voiceTaskModal.loading && <div>Parsing task details...</div>}
+            {voiceTaskModal.error && <div style={{ color: '#ef4444' }}>{voiceTaskModal.error}</div>}
+            {voiceTaskModal.parsed && !voiceTaskModal.loading && (
+              <form onSubmit={e => { e.preventDefault(); handleConfirmVoiceTask(); }}>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontWeight: 600 }}>Title:</label>
+                  <input type="text" value={voiceTaskModal.parsed.title || ''} onChange={e => setVoiceTaskModal(modal => ({ ...modal, parsed: { ...modal.parsed, title: e.target.value } }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd', marginTop: 2 }} required />
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontWeight: 600 }}>Description:</label>
+                  <input type="text" value={voiceTaskModal.parsed.description || ''} onChange={e => setVoiceTaskModal(modal => ({ ...modal, parsed: { ...modal.parsed, description: e.target.value } }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd', marginTop: 2 }} />
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontWeight: 600 }}>Due Date:</label>
+                  <input type="date" value={voiceTaskModal.parsed.due_date ? voiceTaskModal.parsed.due_date.substring(0,10) : ''} onChange={e => setVoiceTaskModal(modal => ({ ...modal, parsed: { ...modal.parsed, due_date: e.target.value } }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd', marginTop: 2 }} />
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontWeight: 600 }}>Priority:</label>
+                  <select value={voiceTaskModal.parsed.priority || 'Low'} onChange={e => setVoiceTaskModal(modal => ({ ...modal, parsed: { ...modal.parsed, priority: e.target.value } }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd', marginTop: 2 }}>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+                <button type="submit" style={{ marginTop: 12, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, width: '100%', fontSize: 16, cursor: 'pointer' }} disabled={voiceTaskModal.loading}>Add Task</button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Smart Schedule Modal */}
+      {smartScheduleModal.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.25)',
+          zIndex: 3000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'var(--card-bg, #fff)',
+            borderRadius: 16,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            padding: 32,
+            minWidth: 320,
+            maxWidth: 420,
+            width: '100%',
+            position: 'relative',
+            display: 'flex', flexDirection: 'column', gap: 16
+          }}>
+            <button onClick={() => setSmartScheduleModal({ open: false, suggested: '', reason: '', loading: false, error: '' })} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>×</button>
+            <h3 style={{ margin: 0, fontWeight: 700 }}>Smart Schedule Suggestion</h3>
+            <div style={{ fontSize: 15, color: '#6366f1', marginBottom: 6 }}><b>Task Details</b></div>
+            <div style={{ fontSize: 15, marginBottom: 2 }}><b>Title:</b> {title || <span style={{color:'#aaa'}}>No title entered</span>}</div>
+            {description && <div style={{ fontSize: 15, marginBottom: 2 }}><b>Description:</b> {description}</div>}
+            <div style={{ fontSize: 15, marginBottom: 2 }}><b>Priority:</b> {priority}</div>
+            {dueDate && <div style={{ fontSize: 15, marginBottom: 2 }}><b>Current Due Date:</b> {dueDate}</div>}
+            <hr style={{ margin: '10px 0', border: 0, borderTop: '1px solid #eee' }} />
+            {smartScheduleModal.loading && <div>Analyzing your history...</div>}
+            {smartScheduleModal.error && <div style={{ color: '#ef4444' }}>{smartScheduleModal.error}</div>}
+            {smartScheduleModal.suggested && !smartScheduleModal.loading && (
+              <>
+                <div style={{ fontSize: 16, marginBottom: 4 }}><b>Suggested Time:</b> {smartScheduleModal.suggested}</div>
+                <div style={{ fontSize: 14, color: '#10b981', marginBottom: 8 }}><b>Reason:</b> {smartScheduleModal.reason || <span style={{color:'#aaa'}}>No reason provided by AI</span>}</div>
+                <button onClick={() => { setDueDate(smartScheduleModal.suggested.substring(0,10)); setSmartScheduleModal({ open: false, suggested: '', reason: '', loading: false, error: '' }); }} style={{ marginTop: 8, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, width: '100%', fontSize: 16, cursor: 'pointer' }}>Use this time</button>
+              </>
+            )}
           </div>
         </div>
       )}

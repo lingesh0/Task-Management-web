@@ -17,11 +17,12 @@ import FAB from '../components/FAB';
 import TaskSkeleton from '../components/TaskSkeleton';
 import TaskCompleteAnimation from '../components/TaskCompleteAnimation';
 import Alert from '../components/Alert';
-import { TypingDots } from '../components/TypingDots';
-import { AIAssistantPanel } from '../components/AIAssistantPanel';
+import TypingDots from '../components/TypingDots';
+import AIAssistantPanel from '../components/AIAssistantPanel';
 import EmptyStateAnimation from '../components/EmptyStateAnimation';
 import { TagList } from '../components/Tag';
 import { CalendarDropdown } from '../components/CalendarDropdown';
+import Modal from '../components/Modal';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -39,6 +40,9 @@ const Home = () => {
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [tags, setTags] = useState('');
+    const [showTaskPopup, setShowTaskPopup] = useState(false);
+    const [todaysTasks, setTodaysTasks] = useState([]);
+    const [highPriorityTasks, setHighPriorityTasks] = useState([]);
 
     // Update time every minute
     useEffect(() => {
@@ -50,6 +54,7 @@ const Home = () => {
     useEffect(() => {
         if (isAuthenticated) {
             fetchTasks();
+            setTimeout(() => setShowTaskPopup(true), 1000); // Show popup after login
         } else {
             setLoading(false);
         }
@@ -64,6 +69,11 @@ const Home = () => {
             if (res.ok) {
                 const data = await res.json();
                 setTasks(data);
+                // Filter today's tasks
+                const todayStr = new Date().toISOString().slice(0, 10);
+                setTodaysTasks(data.filter(t => t.due_date === todayStr && t.status !== 'Completed'));
+                // Filter high priority tasks
+                setHighPriorityTasks(data.filter(t => t.priority === 'High' && t.status !== 'Completed'));
             }
         } catch (error) {
             console.error('Error fetching tasks:', error);
@@ -428,6 +438,31 @@ const Home = () => {
                     onTaskCreate={handleTaskCreated}
                     onClose={() => setShowNaturalLanguageInput(false)}
                 />
+            )}
+            {showTaskPopup && (
+                <Modal onClose={() => setShowTaskPopup(false)}>
+                    <h2>Today's Tasks</h2>
+                    {todaysTasks.length > 0 ? (
+                        <ul>
+                            {todaysTasks.map(task => (
+                                <li key={task.id}>{task.title} {task.due_date && <span>({formatDate(task.due_date)})</span>}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No tasks for today!</p>
+                    )}
+                    <h2>High Priority Tasks</h2>
+                    {highPriorityTasks.length > 0 ? (
+                        <ul>
+                            {highPriorityTasks.map(task => (
+                                <li key={task.id}>{task.title} - Due: {formatDate(task.due_date)}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No high priority tasks!</p>
+                    )}
+                    <button onClick={() => setShowTaskPopup(false)}>Close</button>
+                </Modal>
             )}
         </div>
     );

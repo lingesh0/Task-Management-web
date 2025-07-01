@@ -14,3 +14,4 @@ nltk
 fastapi-mail
 apscheduler
 python-decouple
+openai>=1.0.0

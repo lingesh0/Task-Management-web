@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
 from sqlalchemy.sql import func
 from database import Base
 
@@ -21,16 +21,17 @@ class Task(Base):
     title = Column(String, nullable=False)
     description = Column(Text)
     due_date = Column(String)
-    status = Column(String)
+    status = Column(String, default="Pending")
     user_id = Column(String, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
-    reminder = Column(DateTime, nullable=True)
-    tags = Column(Text, nullable=True)  # JSON string or comma-separated
-    subtasks = Column(Text, nullable=True)  # JSON string
-    recurrence = Column(String, nullable=True)
+    reminder = Column(String, nullable=True)  # for AI Reminder Optimization
+    recurrence = Column(String, nullable=True)  # for Smart Recurrence Predictor
     priority = Column(String, default='Medium')
     position = Column(Integer, nullable=True)
     deleted = Column(Boolean, default=False)
     pinned = Column(Boolean, default=False)
     user_email = Column(String, nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    tags = Column(Text, nullable=True, default='[]')
+    subtasks = Column(Text, nullable=True, default='[]')

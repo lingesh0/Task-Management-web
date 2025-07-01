@@ -21,11 +21,17 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)
 ):
     token = credentials.credentials
+    if not token or token == 'null':
+        logging.warning("[AUTH] No token or 'null' token received. Returning 401.")
+        raise HTTPException(status_code=401, detail="No valid token provided")
+    logging.info(f"[AUTH] Received token: {token[:10]}... (truncated)")
     try:
         decoded_token = firebase_auth.verify_id_token(token)
         uid = decoded_token["uid"]
+        logging.info(f"[AUTH] Token valid for uid: {uid}")
         return uid
-    except Exception:
+    except Exception as e:
+        logging.error(f"[AUTH] Token verification failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid Firebase token")
 
 def verify_token(request: Request):

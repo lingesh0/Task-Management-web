@@ -24,6 +24,10 @@ const TaskDetail = () => {
   const [user, setUser] = useState(null);
   const [activityLog, setActivityLog] = useState([]);
   const [subtaskInput, setSubtaskInput] = useState('');
+  const [summary, setSummary] = useState('');
+  const [summarizing, setSummarizing] = useState(false);
+  const [recurrenceSuggestion, setRecurrenceSuggestion] = useState('');
+  const [reminderSuggestion, setReminderSuggestion] = useState('');
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -174,6 +178,41 @@ const TaskDetail = () => {
     setTask(prev => ({ ...prev, subtasks: newSubtasks }));
   };
 
+  const handleSummarize = async () => {
+    setSummarizing(true);
+    setSummary('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:8000/ai/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: task.description }),
+      });
+      const data = await res.json();
+      setSummary(data.summary || 'No summary available.');
+    } catch {
+      setSummary('Failed to summarize.');
+    } finally {
+      setSummarizing(false);
+    }
+  };
+
+  const fetchRecurrenceAndReminder = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const [recRes, remRes] = await Promise.all([
+        fetch('http://localhost:8000/ai/recurrence-predict', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('http://localhost:8000/ai/optimize-reminder', { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      const recData = await recRes.json();
+      const remData = await remRes.json();
+      setRecurrenceSuggestion(recData.recurrence ? `Suggested recurrence: ${recData.recurrence}` : '');
+      setReminderSuggestion(remData.suggested_reminder ? `Reminder tip: ${remData.suggested_reminder}` : '');
+    } catch {}
+  };
+
+  useEffect(() => { fetchRecurrenceAndReminder(); }, []);
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!task) return <div>No task details available.</div>;
@@ -213,7 +252,15 @@ const TaskDetail = () => {
             onChange={e => handleFieldChange('description', e.target.value)}
           />
         ) : (
-          <p>{task.description}</p>
+          <>
+            <p>{task.description}</p>
+            {task.description && task.description.length > 100 && (
+              <button onClick={handleSummarize} disabled={summarizing} style={{ marginLeft: 8 }}>
+                {summarizing ? 'Summarizing...' : 'Summarize with AI'}
+              </button>
+            )}
+            {summary && <div style={{ color: '#6366f1', marginTop: 8 }}><b>AI Summary:</b> {summary}</div>}
+          </>
         )}
       </div>
       <div className="task-detail-section">
@@ -326,6 +373,8 @@ const TaskDetail = () => {
           ))}
         </ul>
       </div>
+      {recurrenceSuggestion && <div style={{ color: '#a21caf', marginTop: 8 }}>{recurrenceSuggestion}</div>}
+      {reminderSuggestion && <div style={{ color: '#f59e42', marginTop: 4 }}>{reminderSuggestion}</div>}
     </div>
   );
 };

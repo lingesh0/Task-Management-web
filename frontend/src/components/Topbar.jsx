@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { auth, getIdToken } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import '../css/Navbar.css';
+import TaskflowLogo from '../assets/Tsakflow-logo.png';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -60,7 +61,11 @@ const Topbar = ({ sidebarOpen, setSidebarOpen }) => {
             </svg>
           </button>
         )}
-        <Link to="/" className="navbar-logo">Task Manager</Link>
+        <div className="topbar-logo" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link to="/">
+            <img src={TaskflowLogo} alt="Taskflow AI Logo" style={{ height: 80, width: 80, objectFit: 'contain', borderRadius: 20, cursor: 'pointer' }} />
+          </Link>
+        </div>
       </div>
       
       <div className="navbar-links">

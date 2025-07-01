@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -19,6 +19,11 @@ import ContactBar from './components/ContactBar';
 import Settings from './pages/Settings';
 import TaskHistory from './pages/TaskHistory';
 import { TaskViewProvider } from './contexts/TaskViewContext';
+import AIAssistantPanel from './components/AIAssistantPanel';
+import Lottie from 'lottie-react';
+import chatbotLottie from './assets/chatbot.json';
+import ScrollToTop from './components/ScrollToTop';
+import chatbotAvatar from './assets/chatbot-avatar.svg';
 
 // CSS imports
 import './css/index.css';
@@ -37,6 +42,7 @@ const AppLayout = () => {
   const isHomePage = location.pathname === '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -96,6 +102,17 @@ const AppLayout = () => {
         </main>
       </div>
       {(location.pathname === '/settings') && <ContactBar />}
+      {/* Floating AI Assistant Button and Panel */}
+      {location.pathname !== '/login' && location.pathname !== '/register' && (
+        <>
+          <button className="chatbot-fab" onClick={() => setShowChatbot(true)} aria-label="Open Chatbot">
+            <img src={chatbotAvatar} alt="Chatbot" />
+          </button>
+          {showChatbot && (
+            <AIAssistantPanel open={showChatbot} onClose={() => setShowChatbot(false)} />
+          )}
+        </>
+      )}
     </>
   );
 };
@@ -116,6 +133,7 @@ const AppWithRouter = () => (
     <AuthProvider>
       <TaskViewProvider>
         <Router>
+          <ScrollToTop />
           <AnimatePresence mode="wait">
             <App />
           </AnimatePresence>

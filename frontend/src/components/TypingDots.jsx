@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export function TypingDots() {
+function TypingDots() {
   return (
     <div className="flex space-x-1">
       {[0, 1, 2].map(i => (
@@ -13,4 +13,6 @@ export function TypingDots() {
       ))}
     </div>
   );
-} 
+}
+
+export default TypingDots; 

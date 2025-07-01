@@ -81,7 +81,9 @@
     "exportTasksCSV": "Export Tasks (CSV)",
     "exportTasksPDF": "Export Tasks (PDF)",
     "resetSettings": "Reset Settings",
-    "confirmReset": "Are you sure you want to reset all settings?"
+    "confirmReset": "Are you sure you want to reset all settings?",
+    "changepassword": "Change Password",
+    "logout": "Logout"
   },
   "languages": {
     "en": "English",

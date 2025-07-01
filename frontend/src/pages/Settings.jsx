@@ -262,7 +262,7 @@ const Settings = () => {
         <input type="checkbox" checked={notifications} onChange={handleNotificationsChange} />
       </div>
       <div className="profile-theme-section">
-        <button onClick={handleChangePassword}>{t('settings.changePassword')}</button>
+        <button onClick={handleChangePassword}>{t('settings.changepassword')}</button>
         <button onClick={handleClearCompleted}>{t('settings.clearCompleted')}</button>
         <button onClick={() => handleExportTasks('csv')}>{t('settings.exportTasksCSV')}</button>
         <button onClick={() => handleExportTasks('pdf')}>{t('settings.exportTasksPDF')}</button>
