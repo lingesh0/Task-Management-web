@@ -35,3 +35,14 @@ class Task(Base):
     completed_at = Column(DateTime(timezone=True), nullable=True)
     tags = Column(Text, nullable=True, default='[]')
     subtasks = Column(Text, nullable=True, default='[]')
+    reminder_sent = Column(Boolean, default=False)
+    overdue_reminder_sent = Column(Boolean, default=False)
+
+class EmailLog(Base):
+    __tablename__ = "email_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True)
+    email = Column(String)
+    sent_at = Column(DateTime(timezone=True), server_default=func.now())
+    status = Column(String)  # e.g. 'success', 'failed'
+    error = Column(Text, nullable=True)

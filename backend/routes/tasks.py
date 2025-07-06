@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from database import get_db
 from auth import get_current_user
@@ -7,7 +7,14 @@ import json
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 from datetime import datetime, date, timedelta
-from typing import Optional
+from typing import Optional, List
+from models import EmailLog
+import models
+from utils.email import send_reminder_email
+import asyncio
+from firebase_admin import auth as firebase_auth
+from fastapi import status
+import logging
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -169,22 +176,60 @@ def task_history(db: Session = Depends(get_db), uid: str = Depends(get_current_u
     return [serialize_task(t) for t in tasks if getattr(t, 'deleted', False) or t.status == 'Completed']
 
 @router.post("/", response_model=schemas.TaskOut)
-def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
+async def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
     t = crud.create_task(db, uid, task)
+    user = db.query(models.UserProfile).filter(models.UserProfile.user_id == uid).first()
+    print(f"Created task: {t.id}, reminder: {t.reminder}, reminder_sent: {t.reminder_sent}, user: {user.email if user else None}")
+    # Always send a confirmation/reminder email on task creation
+    if user and user.email:
+        try:
+            await send_reminder_email(user.email, user.display_name or user.email, [t])
+            db.add(EmailLog(user_id=uid, email=user.email, status='success'))
+            db.commit()
+            print(f"Confirmation/reminder email sent and logged for {user.email}")
+        except Exception as e:
+            db.add(EmailLog(user_id=uid, email=user.email if user else None, status='failed', error=str(e)))
+            db.commit()
+            print(f"Failed to send confirmation/reminder: {e}")
+    else:
+        print("No confirmation/reminder sent: user or email missing.")
+    # Existing logic for reminder field
+    if t.reminder and not t.reminder_sent and user and user.email:
+        try:
+            reminder_dt = datetime.fromisoformat(t.reminder)
+            if reminder_dt <= datetime.now():
+                print(f"Attempting to send reminder email to {user.email} for task {t.id}")
+                await send_reminder_email(user.email, user.display_name or user.email, [t])
+                t.reminder_sent = True
+                db.add(EmailLog(user_id=uid, email=user.email, status='success'))
+                db.commit()
+                print(f"Reminder email sent and logged for {user.email}")
+        except Exception as e:
+            db.add(EmailLog(user_id=uid, email=user.email if user else None, status='failed', error=str(e)))
+            db.commit()
+            print(f"Failed to send reminder: {e}")
+    else:
+        print("No reminder sent: missing reminder, already sent, or user/email missing.")
+    # Broadcast task creation
+    await notify_task_change('TASK_CREATED', task=t)
     return serialize_task(t)
 
 @router.put("/{task_id}", response_model=schemas.TaskOut)
-def update_task(task_id: int, task: schemas.TaskUpdate, db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
+async def update_task(task_id: int, task: schemas.TaskUpdate, db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
     db_task = crud.update_task(db, uid, task_id, task)
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
+    # Broadcast task update
+    await notify_task_change('TASK_UPDATED', task=db_task)
     return serialize_task(db_task)
 
 @router.delete("/{task_id}")
-def delete_task(task_id: int, db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
+async def delete_task(task_id: int, db: Session = Depends(get_db), uid: str = Depends(get_current_user)):
     ok = crud.delete_task(db, uid, task_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Task not found")
+    # Broadcast task deletion
+    await notify_task_change('TASK_DELETED', task_id=task_id)
     return {"ok": True}
 
 @router.post("/ai-prioritize")
@@ -281,4 +326,38 @@ def bulk_update_tasks(
         errors=errors,
         success_count=len(updated_tasks),
         error_count=len(errors)
-    ) 
+    )
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
+
+# Helper function to broadcast task changes
+async def notify_task_change(event_type: str, task=None, task_id=None):
+    import json
+    if event_type in ('TASK_CREATED', 'TASK_UPDATED') and task is not None:
+        message = json.dumps({
+            'type': event_type,
+            'data': serialize_task(task)
+        })
+    elif event_type == 'TASK_DELETED' and task_id is not None:
+        message = json.dumps({
+            'type': event_type,
+            'data': {'id': task_id}
+        })
+    else:
+        return
+    await manager.broadcast(message) 
